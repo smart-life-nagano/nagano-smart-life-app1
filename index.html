@@ -1,0 +1,782 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="ja"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;音声レポート生成アプリ&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Tailwind CSS CDNを読み込む --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Interフォントを読み込む --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- ReactとBabelを読み込む --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/@babel/standalone/babel.min.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- Lucideアイコンを読み込む --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/lucide@0.414.0/dist/umd/lucide.js"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: 'Inter', sans-serif; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* クリップボードコピー成功時のカスタムメッセージボックス */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.message-box {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>bottom: 1rem;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>right: 1rem;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 1rem;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #22c55e;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 0.75rem;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>z-index: 1000;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>opacity: 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>animation: fadeIn 0.3s forwards;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@keyframes fadeIn {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>to { opacity: 1; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.message-box-error {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: #ef4444;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="bg-gray-100 antialiased"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="root"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script type="text/babel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const { useState, useRef, useEffect } = React;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const { createRoot } = ReactDOM;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Lucide SVG文字列からReactコンポーネントを作成するヘルパー関数</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const createLucideIcon = (iconName) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const iconSVG = lucide[iconName];</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!iconSVG) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>console.error(`Lucide icon not found: ${iconName}`);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return () =&gt; null; // アイコンが見つからない場合は空のコンポーネントを返す</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>return ({ size = 24, color = 'currentColor', ...props }) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;svg</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>xmlns="http://www.w3.org/2000/svg"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>width={size}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>height={size}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>viewBox="0 0 24 24"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>fill="none"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>stroke={color}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>strokeWidth="2"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>strokeLinecap="round"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>strokeLinejoin="round"</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>dangerouslySetInnerHTML={{ __html: iconSVG }}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>{...props}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// アプリケーションで使用するアイコンを定義</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Mic = createLucideIcon('Mic');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Square = createLucideIcon('Square');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Loader = createLucideIcon('Loader');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const SendHorizonal = createLucideIcon('SendHorizonal');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const FileText = createLucideIcon('FileText');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Upload = createLucideIcon('Upload');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Lightbulb = createLucideIcon('Lightbulb');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const ListTodo = createLucideIcon('ListTodo');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const AlertCircle = createLucideIcon('AlertCircle');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const Copy = createLucideIcon('Copy');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// 事前定義されたプロンプトテンプレート</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const promptTemplates = [</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ id: 'custom', label: 'カスタムプロンプト', text: '' },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ id: 'interview_evaluation_sheet', label: '面接レポート（育成生評価シート準拠）', text: `以下の育成生面接シートの評価項目に基づいて、音声から面接内容を分析しレポートを作成してください。</p>
+<p class="p2"><br></p>
+<p class="p1">【1. 自己分析関連】</p>
+<p class="p1">・自己PR・志望動機：プレゼン形式で数字を交えているか、経営感として数値に対する取り組みができているか、履歴書ベースか。</p>
+<p class="p1">・強み・弱みの分析：自己分析ができているか、用意していないように見えないか。</p>
+<p class="p1">・成果を数字で示す能力：自身の売り込み度がどの程度か。</p>
+<p class="p1">・問題解決能力の具体例：自身の売り込み度がどの程度か。</p>
+<p class="p1">・過去の成功体験：自身の売り込み度がどの程度か。</p>
+<p class="p1">・過去の失敗からの学び：自身の売り込み度がどの程度か。</p>
+<p class="p1">・キャリアビジョン：自身の売り込み度がどの程度か。</p>
+<p class="p1">・現在の職務に関連するスキル</p>
+<p class="p1">・過去の職務内容に関する具体的な説明</p>
+<p class="p1">・担当したプロジェクトの概要：チーム内でのコミュニケーションが円滑にとれるか。</p>
+<p class="p1">・転職の理由：自身の売り込み度がどの程度か。</p>
+<p class="p2"><br></p>
+<p class="p1">【2. DLP理解】</p>
+<p class="p1">・DLPのどの想いに共感していますか：共感して応募しているか、DLPについて知らない様子はないか。</p>
+<p class="p1">・長野のデジタルの知識・興味・関心</p>
+<p class="p1">・デジタル情報の収集方法</p>
+<p class="p1">・特定のデジタルツールの使用経験</p>
+<p class="p1">・自己投資・学習意欲・自己啓発活動の説明</p>
+<p class="p2"><br></p>
+<p class="p1">【3. 技術スキル】</p>
+<p class="p1">・プロジェクト管理ツールの使用経験</p>
+<p class="p1">・デジタルマーケティングスキル</p>
+<p class="p1">・データ分析能力</p>
+<p class="p1">・プレゼンテーションソフトの使用経験</p>
+<p class="p1">・プログラム言語（例：Python、R）の知識</p>
+<p class="p1">・ウェブサイトの構築経験</p>
+<p class="p1">・SNS運用の経験</p>
+<p class="p2"><br></p>
+<p class="p1">【4. コミュニケーション能力】</p>
+<p class="p1">・傾聴力</p>
+<p class="p1">・上記までの設問への適切な回答</p>
+<p class="p1">・逆質問の準備</p>
+<p class="p1">・質問内容の具体性</p>
+<p class="p2"><br></p>
+<p class="p1">【5. 組織とのフィット感】</p>
+<p class="p1">・組織(会社・学校の倶楽部や、ボランティア・地域の活動)の倫理観についての考え</p>
+<p class="p1">・自立自走タイプか</p>
+<p class="p1">・リーダーシップスタイルの確認(過去の経験)</p>
+<p class="p2"><br></p>
+<p class="p1">【7. 問題解決能力】</p>
+<p class="p1">・複雑な問題を簡素化する能力</p>
+<p class="p1">・結論から話せているか（例: 高校野球とプロ野球の違い）</p>
+<p class="p1">・創造的な解決策の提案</p>
+<p class="p1">・結論から話せているか</p>
+<p class="p2"><br></p>
+<p class="p1">【8. 適応力】</p>
+<p class="p1">・新環境での適応経験(転校・引っ越し)</p>
+<p class="p1">・組織変更に対する対応力(部署異動・転勤)</p>
+<p class="p2"><br></p>
+<p class="p1">【18. ネットワーク】</p>
+<p class="p1">・あなたにとってネットワークとはなんですか</p>
+<p class="p2"><br></p>
+<p class="p1">【21. 面接のマナー】</p>
+<p class="p1">・身だしなみ</p>
+<p class="p1">・入退室のマナー</p>
+<p class="p1">・敬語の使い方</p>
+<p class="p2"><br></p>
+<p class="p1">【趣味】</p>
+<p class="p1">・趣味について質問し、その回答内容を評価</p>
+<p class="p2"><br></p>
+<p class="p1">これらの項目について、面接での発言を元に評価してください。` },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ id: 'discussion', label: 'ディスカッションレポート', text: 'ディスカッション内容から、以下の項目を網羅したレポートを作成してください。\\n\\n◆デジタルライフの現状についてのまとめ\\n・お持ちのスマートフォン\\n・お持ちのパソコン\\n・固定回線(光・ケーブルtv等)\\n\\n◆本日のディスカッション内容\\n・今後の豊かなデジタルライフへのご興味ご関心\\n・学びのご関心\\n・健康へのご関心\\n・防災へのご関心\\n\\n◆デジタル生活の懸念点など\\n・街中のキャッシュレス\\n・窓口問題について\\n・デバイスの活用にあたり\\n\\n◆本日のディスカッション内容から、将来のアセットのご計画\\n・時期\\n・暮らしが豊かになる、デジタルアセット内容\\n\\n◆ご協力のお願い（長野地域創生に向けて）\\n・安全面でのご協力項目\\n・ご友人、離れて暮すご家族へのSmart Life Members Clubの普及について想定される取り組み' }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// ローカルストレージにデータを保存するためのキー</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const LOCAL_STORAGE_KEY = 'audio-report-data';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const App = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// アプリケーションの状態変数</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [isRecording, setIsRecording] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [audioBlob, setAudioBlob] = useState(null);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [prompt, setPrompt] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [selectedPromptId, setSelectedPromptId] = useState('custom');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [report, setReport] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [summary, setSummary] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [actionItems, setActionItems] = useState([]);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [isLoading, setIsLoading] = useState(false);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [error, setError] = useState('');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [fileName, setFileName] = useState('');</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// MediaRecorder APIのための参照</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const mediaRecorderRef = useRef(null);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const audioChunksRef = useRef([]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Gemini APIのためのAPIキーとURL</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const apiKey = ""; // Canvas環境で自動的に提供されるため、空の文字列のままにしておく</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const [apiError, setApiError] = useState(apiKey === "" ? "" : "APIキーが正しく設定されていません。コードを確認してください。");</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent`;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// コンポーネントのマウント時にローカルストレージからデータを読み込む</p>
+<p class="p1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (savedData) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const { audioBlobBase64, audioBlobType, savedFileName } = JSON.parse(savedData);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (audioBlobBase64 &amp;&amp; audioBlobType) {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>const blob = base64toBlob(audioBlobBase64, audioBlobType);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>setAudioBlob(blob);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>setFileName(savedFileName || 'restored_file');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>console.error("Failed to parse local storage data:", e);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>localStorage.removeItem(LOCAL_STORAGE_KEY);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}, []);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// BlobをBase64に変換</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const blobToBase64 = (blob) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return new Promise((resolve, reject) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const reader = new FileReader();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>reader.onloadend = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const base64String = reader.result.split(',')[1];</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>resolve(base64String);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>reader.onerror = reject;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>reader.readAsDataURL(blob);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>});</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Base64をBlobに変換</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const base64toBlob = (base64Data, contentType = '', sliceSize = 512) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const byteCharacters = atob(base64Data);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const byteArrays = [];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>for (let offset = 0; offset &lt; byteCharacters.length; offset += sliceSize) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const slice = byteCharacters.slice(offset, offset + sliceSize);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const byteNumbers = new Array(slice.length);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>for (let i = 0; i &lt; slice.length; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>byteNumbers[i] = slice.charCodeAt(i);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const byteArray = new Uint8Array(byteNumbers);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>byteArrays.push(byteArray);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>return new Blob(byteArrays, { type: contentType });</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// データをローカルストレージに保存</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const saveToLocalStorage = async (blob) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (blob) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const base64 = await blobToBase64(blob);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const dataToSave = {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>audioBlobBase64: base64,</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>audioBlobType: blob.type,</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>savedFileName: fileName || 'recorded_audio'</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>console.error("Failed to save to local storage:", e);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// プロンプトテンプレートの選択を処理</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const handlePromptTemplateChange = (e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const selectedId = e.target.value;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setSelectedPromptId(selectedId);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const selectedTemplate = promptTemplates.find(template =&gt; template.id === selectedId);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setPrompt(selectedTemplate.text);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 音声録音を開始</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const startRecording = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setError('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (apiError) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(apiError);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (audioBlob) return; // 既に音声がある場合は録音しない</p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const stream = await navigator.mediaDevices.getUserMedia({ audio: true });</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>mediaRecorderRef.current = new MediaRecorder(stream);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>audioChunksRef.current = [];</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setFileName('');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setAudioBlob(null);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setReport('');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setSummary('');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setActionItems([]);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>mediaRecorderRef.current.ondataavailable = (event) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>audioChunksRef.current.push(event.data);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>mediaRecorderRef.current.onstop = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>setAudioBlob(blob);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>saveToLocalStorage(blob);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const tracks = stream.getAudioTracks();</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>tracks.forEach(track =&gt; track.stop());</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>mediaRecorderRef.current.start();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setIsRecording(true);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (err) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>console.error('マイクへのアクセス中にエラーが発生しました:', err);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError('マイクへのアクセス許可が必要です。');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 音声録音を停止</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const stopRecording = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (mediaRecorderRef.current &amp;&amp; isRecording) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>mediaRecorderRef.current.stop();</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setIsRecording(false);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// ファイルアップロードを処理</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const handleFileChange = async (event) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setError('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const file = event.target.files[0];</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (file) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setAudioBlob(file);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setFileName(file.name);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setIsRecording(false);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setReport('');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setSummary('');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setActionItems([]);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>await saveToLocalStorage(file);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setAudioBlob(null);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setFileName('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// 指数バックオフ付きでGemini APIを呼び出す共通関数</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const callGeminiAPI = async (payload) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!apiKey) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const msg = 'APIキーが設定されていません。コードを確認してください。';</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setApiError(msg);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>throw new Error(msg);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>let retries = 0;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const maxRetries = 5;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const initialDelay = 1000;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const fullUrl = `${apiUrl}?key=${apiKey}`;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>while (retries &lt; maxRetries) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const response = await fetch(fullUrl, {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>method: 'POST',</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>headers: { 'Content-Type': 'application/json' },</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>body: JSON.stringify(payload)</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (response.status === 429) {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>const delay = initialDelay * Math.pow(2, retries);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>console.warn(`Too many requests. Retrying in ${delay / 1000}s...`);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>retries++;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>await new Promise(resolve =&gt; setTimeout(resolve, delay));</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>continue;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (!response.ok) {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>const errorText = await response.text();</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>console.error('API Error Response:', errorText);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const result = await response.json();</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (result.candidates &amp;&amp; result.candidates.length &gt; 0 &amp;&amp;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>result.candidates[0].content &amp;&amp; result.candidates[0].content.parts &amp;&amp;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>result.candidates[0].content.parts.length &gt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>return result.candidates[0].content.parts[0];</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>throw new Error('APIからの応答が空です。');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>console.error('API呼び出し中にエラーが発生しました:', e);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>throw new Error(`API呼び出し中にエラーが発生しました: ${e.message}`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>throw new Error('API呼び出しの最大リトライ回数を超えました。');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Gemini APIを使用してレポートを生成</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const generateReport = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (apiError) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(apiError);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!audioBlob) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError('最初に音声を録音するか、ファイルをアップロードしてください。');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setIsLoading(true);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setReport('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setSummary('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setActionItems([]);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setError('');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const base64Audio = await blobToBase64(audioBlob);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const chatHistory = [{</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>role: "user",</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>parts: [{</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>text: `以下の指示に基づいてレポートを作成してください。\n\n指示: ${prompt}`</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}, {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>inlineData: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>mimeType: audioBlob.type,</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>data: base64Audio</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const payload = { contents: chatHistory };</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const result = await callGeminiAPI(payload);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setReport(result.text);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(`レポート生成中にエラーが発生しました: ${e.message}`);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} finally {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setIsLoading(false);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// レポートの要約を生成</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const generateSummary = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (apiError) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(apiError);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!report) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError('先にレポートを生成してください。');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setSummary('要約を生成中...');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setError('');</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const chatHistory = [{</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>role: "user",</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>parts: [{</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>text: `以下のレポートを、3つの主要なポイントに絞って要約してください。\n\nレポート:\n${report}`</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}];</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const payload = { contents: chatHistory };</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const result = await callGeminiAPI(payload);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setSummary(result.text);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(`要約生成中にエラーが発生しました: ${e.message}`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setSummary('');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// レポートからアクションアイテムを抽出</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const extractActionItems = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (apiError) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(apiError);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (!report) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError('先にレポートを生成してください。');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setActionItems([{ action: 'アクションアイテムを抽出中...', assignee: '', dueDate: '' }]);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>setError('');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const chatHistory = [{</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>role: "user",</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>parts: [{</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>text: `以下のレポートを分析し、行動を伴うタスクや決定事項を箇条書きで抽出してください。各項目は「action」「assignee」「dueDate」を含めてJSON形式で出力してください。見つからない場合は空のリストを返してください。\n\nレポート:\n${report}`</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}]</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}];</p>
+<p class="p2"><span class="Apple-converted-space">                            </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const payload = {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>contents: chatHistory,</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>generationConfig: {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>responseMimeType: "application/json",</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>responseSchema: {</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>type: "ARRAY",</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>items: {</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>type: "OBJECT",</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>properties: {</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>"action": { "type": "STRING" },</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>"assignee": { "type": "STRING" },</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>"dueDate": { "type": "STRING" }</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const result = await callGeminiAPI(payload);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const parsedItems = JSON.parse(result.text);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setActionItems(parsedItems);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>} catch (e) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>console.error('アクションアイテム抽出エラー:', e);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setError(`アクションアイテムの抽出中にエラーが発生しました: ${e.message}`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>setActionItems([]);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// テキストをクリップボードにコピー</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const copyToClipboard = () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (report) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>const messageBox = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>messageBox.className = 'message-box';</p>
+<p class="p2"><span class="Apple-converted-space">                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                    </span>try {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>const textToCopy = report.replace(/&lt;br \/&gt;/g, '\n');</p>
+<p class="p2"><span class="Apple-converted-space">                        </span></p>
+<p class="p1"><span class="Apple-converted-space">                        </span>// navigator.clipboardを使用</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>navigator.clipboard.writeText(textToCopy);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>messageBox.innerText = 'レポートがクリップボードにコピーされました！';</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.body.appendChild(messageBox);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>// フォールバック（iframe内では動作しない場合がある）</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>const textArea = document.createElement('textarea');</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>textArea.value = textToCopy;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>textArea.style.position = 'fixed';</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>textArea.style.opacity = '0';</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.body.appendChild(textArea);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>textArea.focus();</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>textArea.select();</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.execCommand('copy');</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.body.removeChild(textArea);</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>messageBox.innerText = 'レポートがクリップボードにコピーされました！（フォールバック）';</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.body.appendChild(messageBox);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} catch (err) {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>console.error('クリップボードへのコピーに失敗しました:', err);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>messageBox.innerText = 'クリップボードへのコピーに失敗しました。';</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>messageBox.classList.add('message-box-error');</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>document.body.appendChild(messageBox);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>} finally {</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>setTimeout(() =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>document.body.removeChild(messageBox);</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>}, 3000);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>};</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>return (</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div className="min-h-screen bg-gray-100 text-gray-900 flex items-center justify-center p-4 font-sans"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-2xl"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h1 className="text-3xl font-bold mb-6 text-center text-gray-800"&gt;音声レポート生成アプリ&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div className="space-y-6"&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                            </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* API Key Error Message (always visible if error exists) */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{apiError &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl flex items-start"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;AlertCircle className="mr-3 mt-1 text-red-600" size={20} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;p&gt;APIキーが正しく設定されていません。コードの `apiKey` 変数を確認してください。&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* Audio Recording Section */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="bg-gray-50 p-6 rounded-xl border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;h2 className="text-xl font-semibold mb-4 flex items-center text-gray-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;Mic className="mr-2" size={20} /&gt; 音声録音</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div className="flex flex-col sm:flex-row gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>onClick={startRecording}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>disabled={isRecording || (audioBlob &amp;&amp; !isRecording) || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 ${</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>isRecording || (audioBlob &amp;&amp; !isRecording) || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>? 'bg-red-200 text-red-800 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>: 'bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg'</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;Mic className="mr-2" size={20} /&gt; {isRecording ? '録音中...' : '録音開始'}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>onClick={stopRecording}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>disabled={!isRecording || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 ${</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>!isRecording || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>? 'bg-gray-300 text-gray-500 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>: 'bg-gray-500 text-white hover:bg-gray-600 shadow-md hover:shadow-lg'</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;Square className="mr-2" size={20} /&gt; 録音終了</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>{isRecording &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;p className="mt-4 text-center text-red-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>🔴 録音中...</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* File Upload Section */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="bg-gray-50 p-6 rounded-xl border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;h2 className="text-xl font-semibold mb-4 flex items-center text-gray-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;Upload className="mr-2" size={20} /&gt; 音声ファイルアップロード</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;label className={`flex items-center justify-center w-full px-6 py-3 rounded-xl font-medium text-white transition-all duration-300 cursor-pointer ${</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>isRecording || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>? 'bg-blue-300 text-blue-100 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>: 'bg-blue-500 hover:bg-blue-600 shadow-md hover:shadow-lg'</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>}`}&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;input</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>type="file"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>accept="audio/mp4,audio/m4a,audio/webm,audio/wav,audio/mp3"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>onChange={handleFileChange}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>disabled={isRecording || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>className="hidden"</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{fileName ? fileName : 'ファイルを選択（ボイスメモも可）'}</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>{audioBlob &amp;&amp; !isRecording &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;p className="mt-4 text-center text-green-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>✅ {fileName} が読み込まれました！</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* Prompt Section */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="bg-gray-50 p-6 rounded-xl border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;h2 className="text-xl font-semibold mb-4 flex items-center text-gray-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;FileText className="mr-2" size={20} /&gt; レポート作成指示 (プロンプト)</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div className="mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;label htmlFor="prompt-template" className="block text-sm font-medium text-gray-700 mb-2"&gt;テンプレートを選択:&lt;/label&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;select</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>id="prompt-template"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>value={selectedPromptId}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>onChange={handlePromptTemplateChange}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>disabled={apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>className={`w-full p-3 rounded-xl bg-white border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${apiError ? 'opacity-50 cursor-not-allowed' : ''}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>{promptTemplates.map(template =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;option key={template.id} value={template.id}&gt;{template.label}&lt;/option&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/select&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;textarea</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>className={`w-full h-24 p-3 rounded-xl bg-white border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 ${apiError ? 'opacity-50 cursor-not-allowed' : ''}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>value={prompt}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>onChange={(e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>setPrompt(e.target.value);</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>setSelectedPromptId('custom');</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>}}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>disabled={apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>placeholder="レポート作成のための具体的な指示を入力するか、テンプレートを選択してください。"</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&gt;&lt;/textarea&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* Generate Report Button */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;div className="text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>onClick={generateReport}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>disabled={isLoading || !audioBlob || prompt.trim() === '' || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>className={`flex items-center justify-center w-full px-6 py-3 rounded-xl font-bold text-lg transition-all duration-300 ${</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>isLoading || !audioBlob || prompt.trim() === '' || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>? 'bg-blue-300 text-blue-100 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>: 'bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{isLoading ? (</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;Loader className="mr-2 animate-spin" size={20} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>レポート生成中...</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>) : (</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;SendHorizonal className="mr-2" size={20} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>レポートを生成</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* Error Message */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{error &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl flex items-start"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;AlertCircle className="mr-3 mt-1 text-red-600" size={20} /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;p&gt;{error}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{/* Report Output */}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>{report &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;div className="bg-white p-6 rounded-xl shadow-inner border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex justify-between items-center mb-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;h2 className="text-xl font-semibold text-gray-700"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>生成されたレポート</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/h2&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>onClick={copyToClipboard}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors duration-300"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;Copy className="mr-2" size={16} /&gt; この文章をコピーする</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>className="prose max-w-full text-gray-800 leading-relaxed"</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>dangerouslySetInnerHTML={{ __html: report.replace(/\n/g, '&lt;br /&gt;') }}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&gt;&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">                                    </span></p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{/* Report Actions */}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;div className="mt-6 border-t pt-4 border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;h3 className="text-lg font-semibold text-gray-700 mb-4"&gt;レポート活用ツール&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="flex flex-col sm:flex-row gap-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>{/* Summary Button */}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>onClick={generateSummary}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>disabled={summary === '要約を生成中...' || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 ${</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>summary === '要約を生成中...' || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>? 'bg-orange-200 text-orange-800 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>: 'bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg'</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;Lightbulb className="mr-2" size={20} /&gt; ✨ レポートを要約</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>{/* Action Items Button */}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;button</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>onClick={extractActionItems}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>disabled={actionItems.length &gt; 0 &amp;&amp; actionItems[0].action === 'アクションアイテムを抽出中...' || apiError}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 ${</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>actionItems.length &gt; 0 &amp;&amp; actionItems[0].action === 'アクションアイテムを抽出中...' || apiError</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>? 'bg-purple-200 text-purple-800 cursor-not-allowed'</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>: 'bg-purple-500 text-white hover:bg-purple-600 shadow-md hover:shadow-lg'</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>}`}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;ListTodo className="mr-2" size={20} /&gt; ✨ アクションアイテムを抽出</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{/* Summary Output */}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{summary &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="mt-6 p-4 bg-gray-100 rounded-xl border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;h3 className="text-lg font-semibold text-gray-700 mb-2"&gt;レポート要約&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;div</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>className="prose text-gray-800"</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>dangerouslySetInnerHTML={{ __html: summary.replace(/\n/g, '&lt;br /&gt;') }}</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>)}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{/* Action Items Output */}</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>{actionItems.length &gt; 0 &amp;&amp; actionItems[0].action !== 'アクションアイテムを抽出中...' &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;div className="mt-6 p-4 bg-gray-100 rounded-xl border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>&lt;h3 className="text-lg font-semibold text-gray-700 mb-2"&gt;アクションアイテム&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>{actionItems.map((item, index) =&gt; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;div key={index} className="mb-3 p-3 bg-white rounded-lg shadow-sm border border-gray-200"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;p className="font-medium text-gray-800"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;strong&gt;アクション:&lt;/strong&gt; {item.action}</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>{item.assignee &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;p className="text-sm text-gray-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>&lt;strong&gt;担当者:&lt;/strong&gt; {item.assignee}</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>{item.dueDate &amp;&amp; (</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;p className="text-sm text-gray-600"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                            </span>&lt;strong&gt;期日:&lt;/strong&gt; {item.dueDate}</p>
+<p class="p1"><span class="Apple-converted-space">                                                        </span>&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                                    </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                            </span>))}</p>
+<p class="p1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                                    </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>)}</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const rootElement = document.getElementById('root');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const root = createRoot(rootElement);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>root.render(&lt;App /&gt;);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
